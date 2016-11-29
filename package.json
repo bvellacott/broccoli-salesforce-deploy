@@ -1,0 +1,34 @@
+{
+  "name": "broccoli-salesforce-deploy",
+  "version": "1.0.0",
+  "description": "A broccoli plugin to deploy files to a salesforce org using the tooling ap",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bvellacott/broccoli-salesforce-deploy.git"
+  },
+  "keywords": [
+    "broccoli",
+    "plugin",
+    "salesforce",
+    "deploy",
+    "tooling",
+    "api"
+  ],
+  "author": "Benjamin Vellacott",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bvellacott/broccoli-salesforce-deploy/issues"
+  },
+  "homepage": "https://github.com/bvellacott/broccoli-salesforce-deploy#readme",
+  "dependencies": {
+    "broccoli-plugin": "^1.2.2",
+    "jsforce": "^1.7.1"
+  },
+  "devDependencies": {
+    "qunit": "^0.9.1"
+  }
+}
