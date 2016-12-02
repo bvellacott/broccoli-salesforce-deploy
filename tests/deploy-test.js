@@ -113,7 +113,7 @@ test("Deploy non-existent file", function() {
 
   return deploy.staticResource(connection, {
     filePath: 'non-existent-resource',
-    name: 'no-nome'
+    name: 'no-name'
   }).then(function(res, err) {
     if(err) {
       ok(true, err);
