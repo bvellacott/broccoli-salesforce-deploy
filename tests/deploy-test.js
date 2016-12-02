@@ -1,57 +1,112 @@
-var connection = {
-  tooling: {
-    sobject(type) {
-      return {
-        create: function(options) {
-          if(type !== 'StaticResource') {
-            return Promise.reject('only static resource deployment is supported currently');
+function createConnection() {
+  var conn = {
+    idCount: 0,
+    object: null,
+    tooling: {
+      sobject(type) {
+        return {
+          create: function(obj) {
+            if(conn.object) {
+              return Promise.reject('DUPLICATE_VALUE');
+            }
+            conn.object = obj;
+            conn.idCount++;
+            conn.object.Id = conn.idCount
+            return Promise.resolve({
+                "id": '' + conn.object.Id,
+                "success": true,
+                "errors": []
+            });
+          },
+          update: function(obj) {
+            if(!conn.object) {
+              return Promise.reject('DOESNT_EXIST');
+            }
+            return Promise.resolve({
+                "id": '' + conn.object.Id,
+                "success": true,
+                "errors": []
+            });
           }
-          if(!options.body) {
-            return Promise.reject('no data provided');
+        };
+      },
+      findOne() {
+        return {
+          execute: function(cb) {
+            if(!conn.object) {
+              cb('DOESNT_EXIST');
+            }
+            cb(null, conn.object);
           }
-          if(!options.name) {
-            return Promise.reject('no name provided for the static resource');
-          }
-          return Promise.resolve({
-            type: type, 
-            data: !!options.body,
-            name: options.name,
-          });
         }
-      };
+      }
     }
-  }
-};
+  };
+  return conn;
+}
 
-test( "Deploy existing resource", function() {
-  expect(1);
+test( "Deploy and update existing file", function() {
+  expect(3);
   stop();
 
-  return deploy.staticResource(connection, {
+  var connection = createConnection();
+
+  var options = {
     filePath: './tests/zipTest.resource',
     name: 'zipTest'
-  }).then(function(res, err) {
-    if(err) {
-      notOk(true, err);
-    }
+  };
+
+  deploy.staticResource(connection, options)
+  .then(function(res) {
 
     deepEqual(res, {
-      type: 'StaticResource',
-      data: true,
-      name: 'zipTest'
-    }, "static resource deploy result");
-    start();
+        "id": "1",
+        "success": true,
+        "errors": []
+    }, "static resource create deploy result");
+    options.id = res.id;
+
+    deploy.staticResource(connection, options)
+    .then(function(res) {
+
+      deepEqual(res, {
+          "id": "1",
+          "success": true,
+          "errors": []
+      }, "static resource update deploy result");
+      connection.object = null;
+
+      deploy.staticResource(connection, options)
+      .then(function(res) {
+
+        deepEqual(res, {
+            "id": "2",
+            "success": true,
+            "errors": []
+        }, "static resource deploy after server delete result");
+        start();
+
+      }).catch(function(err){
+        notOk(true, err);
+        start();
+      });
+
+    }).catch(function(err){
+        notOk(true, err);
+        start();
+    });
+
   }).catch(function(err){
-    if(err) {
-      notOk(true, err);
-    }
+    notOk(true, err);
     start();
- });
+  });
 });
 
-test( "Deploy non-existent resource", function() {
+test("Deploy non-existent file", function() {
   expect(1);
   stop();
+
+  var connection = createConnection();
 
   return deploy.staticResource(connection, {
     filePath: 'non-existent-resource',
