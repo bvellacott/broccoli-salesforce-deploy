@@ -86,16 +86,9 @@ test( "Deploy and update existing file", function() {
         }, "static resource deploy after server delete result");
         start();
 
-      }).catch(function(err){
-        notOk(true, err);
-        start();
       });
 
-    }).catch(function(err){
-        notOk(true, err);
-        start();
     });
-
   }).catch(function(err){
     notOk(true, err);
     start();
