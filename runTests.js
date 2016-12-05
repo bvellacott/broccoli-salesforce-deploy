@@ -43,10 +43,12 @@ testrunner.setup(
     maxBlockDuration: 2000
 });
 
-// one code and tests file 
 testrunner.run({
-    // code: { path: "mocks.js", namespace: 'mocks' },
     code: { path: "lib/deploy.js", namespace: 'deploy' },
-    // deps: 'jsforce',
     tests: "tests/deploy-test.js"
-}, function(){ console.log('done'); });
+}, function(){ console.log('finished deploy test'); });
+
+testrunner.run({
+    code: { path: "lib/cache.js", namespace: 'newCache' },
+    tests: "tests/cache-test.js"
+}, function(){ console.log('finished cache test'); });

@@ -5,7 +5,7 @@ function createConnection() {
     tooling: {
       sobject(type) {
         return {
-          create: function(obj) {
+          create(obj) {
             if(conn.object) {
               return Promise.reject('DUPLICATE_VALUE');
             }
@@ -18,7 +18,7 @@ function createConnection() {
                 "errors": []
             });
           },
-          update: function(obj) {
+          update(obj) {
             if(!conn.object) {
               return Promise.reject('DOESNT_EXIST');
             }
@@ -28,7 +28,7 @@ function createConnection() {
                 "errors": []
             });
           },
-          findOne: function() {
+          findOne() {
             console.log("finding the record");
             return {
               execute: function(cb) {
@@ -46,7 +46,7 @@ function createConnection() {
   return conn;
 }
 
-test( "Deploy and update, delete from server and update again", function() {
+test( "Deploy and update, delete from server and update again", () => {
   expect(4);
   stop();
 
@@ -58,7 +58,7 @@ test( "Deploy and update, delete from server and update again", function() {
   };
 
   deploy.staticResource(connection, options)
-  .then(function(res) {
+  .then(res => {
 
     deepEqual(res, {
         "id": "1",
@@ -67,7 +67,7 @@ test( "Deploy and update, delete from server and update again", function() {
     }, "static resource create deploy result");
     return deploy.staticResource(connection, options);
   })
-  .then(function(res) {
+  .then(res => {
 
     deepEqual(res, {
         "id": "1",
@@ -78,7 +78,7 @@ test( "Deploy and update, delete from server and update again", function() {
 
     return deploy.staticResource(connection, options);
   })
-  .then(function(res) {
+  .then(res => {
 
     deepEqual(res, {
         "id": "1",
@@ -89,7 +89,7 @@ test( "Deploy and update, delete from server and update again", function() {
 
     return deploy.staticResource(connection, options);
   })
-  .then(function(res) {
+  .then(res => {
 
     deepEqual(res, {
         "id": "2",
@@ -99,13 +99,13 @@ test( "Deploy and update, delete from server and update again", function() {
     start();
 
   })
-  .catch(function(err){
+  .catch(err => {
     notOk(true, err);
     start();
   });
 });
 
-test("Deploy non-existent file", function() {
+test("Deploy non-existent file", () => {
   expect(1);
   stop();
 
@@ -114,13 +114,13 @@ test("Deploy non-existent file", function() {
   return deploy.staticResource(connection, {
     filePath: 'non-existent-resource',
     name: 'no-name'
-  }).then(function(res, err) {
+  }).then((res, err) => {
     if(err) {
       ok(true, err);
     }
     notOk(res, 'shouldn\'t resolve non-existent resource');
     start();
-  }).catch(function(err){
+  }).catch(err => {
     ok(true, err);
     start();
   });
