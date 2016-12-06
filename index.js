@@ -31,11 +31,13 @@ SfDeploy.prototype.build = function() {
   var options = this.options;
   // check for mandatory options
   const filePath = path.join(this.inputPaths[0], options.file);
+  const outputPath = path.join(this.outputPath, options.file);
   if(!options.username) throw new Error('No username specified');
   if(!options.password) throw new Error('No password specified');
   if(!options.securityToken) throw new Error('No securityToken specified');
   const cacheFilePath = path.join(this.inputPaths[0], options.cacheFile || '_sfDeployCache.json');
- 
+
+
   if(!this.cache) {
     this.cache = newCache(cacheFilePath);
   }
@@ -108,6 +110,9 @@ SfDeploy.prototype.build = function() {
       });
     }
   });
+
+  // don't do anything to the file - we're only deploying
+  fs.writeFileSync(outputPath, fs.readFileSync(filePath));
 };
 
 module.exports = SfDeploy;
