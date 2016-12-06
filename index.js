@@ -2,39 +2,50 @@ var Plugin = require('broccoli-caching-writer');
 var path = require('path');
 var jsforce = require('jsforce');
 var fs = require('fs');
-var jsonfile = require('jsonfile');
 var newCache = require('./lib/cache');
 var deploy = require('./lib/deploy');
 
 // Create a subclass SfDeploy derived from Plugin
 SfDeploy.prototype = Object.create(Plugin.prototype);
 SfDeploy.prototype.constructor = SfDeploy;
-function SfDeploy(inputNodes, options) {
+function SfDeploy(inputNode, options) {
+  if (!(this instanceof SfDeploy)) {
+    return new SfDeploy(inputNode, options);
+  }
   options = options || {};
-  Plugin.call(this, inputNodes, {
-    annotation: options.annotation
+
+  // check for mandatory options
+  if(!options.file) throw new Error('No filepath specified');
+  options.name = (options.name || path.basename(options.file)).split('.')[0];
+  options.cacheInclude = [ new RegExp(options.file + '$') ];
+
+  Plugin.call(this, [inputNode], {
+    annotation: options.annotation,
+    persistentOutput: true
   });
+
   this.options = options;
 }
 
 SfDeploy.prototype.build = function() {
+  var options = this.options;
   // check for mandatory options
-  if(!this.options.file) throw new Error('No filepath specified');
-  const filePath = path.join(this.inputPaths[0], this.options.file);
-  if(!this.options.username) throw new Error('No username specified');
-  if(!this.options.password) throw new Error('No password specified');
-  if(!this.options.securityToken) throw new Error('No securityToken specified');
-  this.options.name = this.options.name || path.basename(this.options.file);
-  const cacheFilePath = path.join(this.inputPaths[0], this.options.cacheFile || '_sfDeployCache.json');
+  const filePath = path.join(this.inputPaths[0], options.file);
+  if(!options.username) throw new Error('No username specified');
+  if(!options.password) throw new Error('No password specified');
+  if(!options.securityToken) throw new Error('No securityToken specified');
+  const cacheFilePath = path.join(this.inputPaths[0], options.cacheFile || '_sfDeployCache.json');
  
-  var cache = newCache(cacheFilePath);
-  cache.init();
+  if(!this.cache) {
+    this.cache = newCache(cacheFilePath);
+  }
+  var cache = this.cache;
+  cache.init()
   .then(data => {
-
     var conn = null;
     if(!cache.data.accessToken) {
       conn = new jsforce.Connection({
-        loginUrl : this.options.loginUrl || 'https://login.salesforce.com',
+        loginUrl : options.loginUrl || 'https://login.salesforce.com',
       });
     }
     else {
@@ -47,40 +58,45 @@ SfDeploy.prototype.build = function() {
     function deployResource() {
       return deploy.staticResource(conn, {
         filePath: filePath, 
-        cacheControl: this.options.cacheControl,
-        contentType: this.options.contentType,
-        name: this.options.name,
+        cacheControl: options.cacheControl,
+        contentType: options.contentType,
+        name: options.name,
         id: cache.data.id
       });
     }
 
     function loginAndDeploy() {
-      conn.login(this.options.username, this.options.password + this.options.securityToken, (err, userInfo) => {
-        if(err) throw err;
+      return new Promise((resolve, reject) => {
+        conn.login(options.username, options.password + options.securityToken, (err, userInfo) => {
+          if(err) throw err;
 
-        cache.data.accessToken = conn.accessToken;
-        cache.data.instanceUrl = conn.instanceUrl;
-        cache.data.userInfo = userInfo;
-        cache.write();
-
-        deployResource()
-        .then(res => {
-          cache.data.id = res.id;
+          cache.data.accessToken = conn.accessToken;
+          cache.data.instanceUrl = conn.instanceUrl;
+          cache.data.userInfo = userInfo;
           cache.write();
-        });
-        .catch(err => {
-          console.log("failed to deploy the resource");
-          console.log(err);
+
+          deployResource()
+          .then(res => {
+            console.log(res);
+            cache.data.id = res.id;
+            cache.write();
+            resolve(res);
+          })
+          .catch(err => {
+            console.log(err);
+            reject(err);
+          });
         });
       });
     }
 
     if(!data.accessToken) {
-      loginAndDeploy();
+      return loginAndDeploy();
     }
     else {
-      deployResource()
+      return deployResource()
       .then(res => {
+        console.log(res);
         cache.data.id = res.id;
         cache.write();
       })
