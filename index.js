@@ -1,9 +1,10 @@
-var Plugin = require('broccoli-caching-writer');
-var path = require('path');
-var jsforce = require('jsforce');
-var fs = require('fs');
-var newCache = require('./lib/cache');
-var deploy = require('./lib/deploy');
+const Plugin = require('broccoli-caching-writer');
+const path = require('path');
+const jsforce = require('jsforce');
+const fs = require('fs');
+const newCache = require('./lib/cache');
+const deploy = require('./lib/deploy');
+const log = require('./lib/logger');
 
 // Create a subclass SfDeploy derived from Plugin
 SfDeploy.prototype = Object.create(Plugin.prototype);
@@ -16,6 +17,7 @@ function SfDeploy(inputNode, options) {
 
   // check for mandatory options
   if(!options.file) throw new Error('No filepath specified');
+  if(!options.type) throw new Error('No resource type specified');
   options.name = (options.name || path.basename(options.file)).split('.')[0];
   options.cacheInclude = [ new RegExp(options.file + '$') ];
 
@@ -32,33 +34,35 @@ SfDeploy.prototype.build = function() {
   // check for mandatory options
   const filePath = path.join(this.inputPaths[0], options.file);
   const outputPath = path.join(this.outputPath, options.file);
-  if(!options.username) throw new Error('No username specified');
-  if(!options.password) throw new Error('No password specified');
-  if(!options.securityToken) throw new Error('No securityToken specified');
-  const cacheFilePath = path.join(this.inputPaths[0], options.cacheFile || '_sfDeployCache.json');
+  const cacheFilePath = path.join(this.cachePath, options.cacheFile || '_sfDeployCache.json');
+  const connectionCache = newCache(options.connectionCache || './sfConnection.cache');
 
 
   if(!this.cache) {
     this.cache = newCache(cacheFilePath);
   }
   var cache = this.cache;
-  cache.init()
+
+  connectionCache.init()
+  .then(connectionData => {
+    return cache.init();
+  })
   .then(data => {
     var conn = null;
-    if(!cache.data.accessToken) {
+    if(!connectionCache.data.accessToken) {
       conn = new jsforce.Connection({
         loginUrl : options.loginUrl || 'https://login.salesforce.com',
       });
     }
     else {
       conn = new jsforce.Connection({
-        accessToken: cache.data.accessToken,
-        instanceUrl: cache.data.instanceUrl
+        accessToken: connectionCache.data.accessToken,
+        instanceUrl: connectionCache.data.instanceUrl
       });
     }
 
     function deployResource() {
-      return deploy.staticResource(conn, {
+      return deploy[options.type](conn, {
         filePath: filePath, 
         cacheControl: options.cacheControl,
         contentType: options.contentType,
@@ -72,40 +76,40 @@ SfDeploy.prototype.build = function() {
         conn.login(options.username, options.password + options.securityToken, (err, userInfo) => {
           if(err) throw err;
 
-          cache.data.accessToken = conn.accessToken;
-          cache.data.instanceUrl = conn.instanceUrl;
-          cache.data.userInfo = userInfo;
-          cache.write();
+          connectionCache.data.accessToken = conn.accessToken;
+          connectionCache.data.instanceUrl = conn.instanceUrl;
+          connectionCache.data.userInfo = userInfo;
+          connectionCache.write();
 
           deployResource()
           .then(res => {
-            console.log(res);
+            log.info(res);
             cache.data.id = res.id;
             cache.write();
             resolve(res);
           })
           .catch(err => {
-            console.log(err);
+            log.error(err);
             reject(err);
           });
         });
       });
     }
 
-    if(!data.accessToken) {
+    if(!connectionCache.data.accessToken) {
       return loginAndDeploy();
     }
     else {
       return deployResource()
       .then(res => {
-        console.log(res);
+        log.info(res);
         cache.data.id = res.id;
         cache.write();
       })
       .catch(err => {
-        console.log("failed to deploy because: ");
-        console.log(err);
-        console.log("\nre-logging in and trying again");
+        log.info("failed to deploy");
+        log.error(err);
+        log.info("\nre-logging in and trying again");
         loginAndDeploy();
       });
     }
@@ -114,5 +118,9 @@ SfDeploy.prototype.build = function() {
   // don't do anything to the file - we're only deploying
   fs.writeFileSync(outputPath, fs.readFileSync(filePath));
 };
+
+SfDeploy.setLogLevel = function(level) {
+  log.level = level;
+}
 
 module.exports = SfDeploy;

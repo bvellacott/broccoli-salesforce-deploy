@@ -57,7 +57,7 @@ test( "Deploy and update, delete from server and update again", () => {
     name: 'zipTest'
   };
 
-  deploy.staticResource(connection, options)
+  deploy.StaticResource(connection, options)
   .then(res => {
 
     deepEqual(res, {
@@ -65,7 +65,7 @@ test( "Deploy and update, delete from server and update again", () => {
         "success": true,
         "errors": []
     }, "static resource create deploy result");
-    return deploy.staticResource(connection, options);
+    return deploy.StaticResource(connection, options);
   })
   .then(res => {
 
@@ -76,7 +76,7 @@ test( "Deploy and update, delete from server and update again", () => {
     }, "static resource update deploy result");
     options.id = res.id; 
 
-    return deploy.staticResource(connection, options);
+    return deploy.StaticResource(connection, options);
   })
   .then(res => {
 
@@ -87,7 +87,7 @@ test( "Deploy and update, delete from server and update again", () => {
     }, "static resource update deploy result");
     connection.object = null;
 
-    return deploy.staticResource(connection, options);
+    return deploy.StaticResource(connection, options);
   })
   .then(res => {
 
@@ -111,7 +111,7 @@ test("Deploy non-existent file", () => {
 
   var connection = createConnection();
 
-  return deploy.staticResource(connection, {
+  return deploy.StaticResource(connection, {
     filePath: 'non-existent-resource',
     name: 'no-name'
   }).then((res, err) => {
