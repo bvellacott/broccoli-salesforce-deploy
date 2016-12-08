@@ -10,16 +10,17 @@ const log = require('./lib/logger');
 SfDeploy.prototype = Object.create(Plugin.prototype);
 SfDeploy.prototype.constructor = SfDeploy;
 function SfDeploy(inputNode, options) {
-  if (!(this instanceof SfDeploy)) {
-    return new SfDeploy(inputNode, options);
-  }
-  options = options || {};
-
   // check for mandatory options
+  options = options || {};
   if(!options.file) throw new Error('No filepath specified');
   if(!options.type) throw new Error('No resource type specified');
   options.name = (options.name || path.basename(options.file)).split('.')[0];
   options.cacheInclude = [ new RegExp(options.file + '$') ];
+
+  if (!(this instanceof SfDeploy)) {
+    return new SfDeploy(inputNode, options);
+  }
+
 
   Plugin.call(this, [inputNode], {
     annotation: options.annotation,
@@ -33,6 +34,9 @@ SfDeploy.prototype.build = function() {
   var options = this.options;
   // check for mandatory options
   const filePath = path.join(this.inputPaths[0], options.file);
+  if(!fs.existsSync(filePath)) {
+    return;
+  }
   const outputPath = path.join(this.outputPath, options.file);
   const cacheFilePath = path.join(this.cachePath, options.cacheFile || '_sfDeployCache.json');
   const connectionCache = newCache(options.connectionCache || './sfConnection.cache');
