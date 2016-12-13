@@ -28,10 +28,16 @@ function SfDeploy(inputNode, options) {
   });
 
   this.options = options;
+  this.buildCount = 0;
 }
 
 SfDeploy.prototype.build = function() {
+  this.buildCount++;
   var options = this.options;
+  if(options.skipFirstBuild && this.buildCount < 2) {
+    return;
+  }
+
   // check for mandatory options
   const filePath = path.join(this.inputPaths[0], options.file);
   if(!fs.existsSync(filePath)) {
