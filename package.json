@@ -1,6 +1,6 @@
 {
   "name": "broccoli-salesforce-deploy",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A broccoli plugin to deploy files to a salesforce org using the tooling ap",
   "main": "index.js",
   "scripts": {
@@ -25,12 +25,12 @@
   },
   "homepage": "https://github.com/bvellacott/broccoli-salesforce-deploy#readme",
   "dependencies": {
-    "broccoli-caching-writer": "^3.0.3",
-    "jsforce": "^1.7.1",
-    "jsonfile": "^2.4.0"
+    "broccoli-caching-writer": "3.0.3",
+    "jsforce": "1.7.1",
+    "jsonfile": "2.4.0"
   },
   "devDependencies": {
-    "istanbul": "^0.4.5",
-    "qunit": "^0.9.1"
+    "istanbul": "0.4.5",
+    "qunit": "0.9.1"
   }
 }
