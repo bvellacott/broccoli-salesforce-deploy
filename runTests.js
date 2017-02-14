@@ -21,7 +21,7 @@ testrunner.setup(
         globalSummary: true,
  
         // log coverage 
-        coverage: true,
+        coverage: false,
  
         // log global coverage (all files) 
         globalCoverage: true,
@@ -31,7 +31,7 @@ testrunner.setup(
     },
  
     // run test coverage tool 
-    coverage: true,
+    coverage: false,
  
     // define dependencies, which are required then before code 
     deps: null,
@@ -48,7 +48,7 @@ testrunner.run({
     tests: "tests/deploy-test.js"
 }, function(){ console.log('finished deploy test'); });
 
-testrunner.run({
-    code: { path: "lib/cache.js", namespace: 'newCache' },
-    tests: "tests/cache-test.js"
-}, function(){ console.log('finished cache test'); });
+// testrunner.run({
+//     code: { path: "lib/cache.js", namespace: 'newCache' },
+//     tests: "tests/cache-test.js"
+// }, function(){ console.log('finished cache test'); });

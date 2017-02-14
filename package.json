@@ -30,6 +30,7 @@
     "jsonfile": "^2.4.0"
   },
   "devDependencies": {
+    "istanbul": "^0.4.5",
     "qunit": "^0.9.1"
   }
 }

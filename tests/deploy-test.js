@@ -1,3 +1,5 @@
+var log = require('../lib/logger');
+
 function createConnection() {
   var conn = {
     idCount: 0,
@@ -103,6 +105,69 @@ test( "Deploy and update, delete from server and update again", () => {
     notOk(true, err);
     start();
   });
+
+});
+
+test( "Aura Component - Deploy and update, delete from server and update again", () => {
+  expect(4);
+  stop();
+
+  var connection = createConnection();
+
+  var options = {
+    filePath: './tests/aura.cmp',
+    name: 'auraComponent',
+    language: 'en_US',
+    defType: "COMPONENT",
+    format: 'XML',
+  };
+
+  deploy.AuraDefinition(connection, options)
+  .then(res => {
+
+    deepEqual(res, {
+      "id": "1",
+      "success": true,
+      "errors": [],
+    }, "aura component create deploy result");
+    return deploy.AuraDefinition(connection, options);
+  })
+  .then(res => {
+
+    deepEqual(res, {
+      "id": "1",
+      "success": true,
+      "errors": []
+    }, "aura component update deploy result");
+    options.id = res.id; 
+
+    return deploy.AuraDefinition(connection, options);
+  })
+  .then(res => {
+
+    deepEqual(res, {
+      "id": "1",
+      "success": true,
+      "errors": []
+    }, "aura component update deploy result");
+    connection.object = null;
+
+    return deploy.AuraDefinition(connection, options);
+  })
+  .then(res => {
+
+    deepEqual(res, {
+      "id": "2",
+      "success": true,
+      "errors": []
+    }, "AuraDefinition deploy after server delete result");
+    start();
+
+  })
+  .catch(err => {
+    notOk(true, err);
+    start();
+  });
 });
 
 test("Deploy non-existent file", () => {
@@ -125,3 +190,4 @@ test("Deploy non-existent file", () => {
     start();
   });
 });
+
