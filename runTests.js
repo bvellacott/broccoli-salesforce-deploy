@@ -48,7 +48,7 @@ testrunner.run({
     tests: "tests/deploy-test.js"
 }, function(){ console.log('finished deploy test'); });
 
-// testrunner.run({
-//     code: { path: "lib/cache.js", namespace: 'newCache' },
-//     tests: "tests/cache-test.js"
-// }, function(){ console.log('finished cache test'); });
+testrunner.run({
+    code: { path: "lib/cache.js", namespace: 'newCache' },
+    tests: "tests/cache-test.js"
+}, function(){ console.log('finished cache test'); });

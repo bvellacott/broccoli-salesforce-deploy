@@ -4,45 +4,43 @@ function createConnection() {
   var conn = {
     idCount: 0,
     object: null,
-    tooling: {
-      sobject(type) {
-        return {
-          create(obj) {
-            if(conn.object) {
-              return Promise.reject('DUPLICATE_VALUE');
-            }
-            conn.object = obj;
-            conn.idCount++;
-            conn.object.Id = conn.idCount
-            return Promise.resolve({
-                "id": '' + conn.object.Id,
-                "success": true,
-                "errors": []
-            });
-          },
-          update(obj) {
-            if(!conn.object) {
-              return Promise.reject('DOESNT_EXIST');
-            }
-            return Promise.resolve({
-                "id": '' + conn.object.Id,
-                "success": true,
-                "errors": []
-            });
-          },
-          findOne() {
-            console.log("finding the record");
-            return {
-              execute: function(cb) {
-                if(!conn.object) {
-                  cb('DOESNT_EXIST');
-                }
-                cb(null, conn.object);
+    sobject(type) {
+      return {
+        create(obj) {
+          if(conn.object) {
+            return Promise.reject('DUPLICATE_VALUE');
+          }
+          conn.object = obj;
+          conn.idCount++;
+          conn.object.Id = conn.idCount
+          return Promise.resolve({
+              "id": '' + conn.object.Id,
+              "success": true,
+              "errors": []
+          });
+        },
+        update(obj) {
+          if(!conn.object) {
+            return Promise.reject('DOESNT_EXIST');
+          }
+          return Promise.resolve({
+              "id": '' + conn.object.Id,
+              "success": true,
+              "errors": []
+          });
+        },
+        findOne() {
+          console.log("finding the record");
+          return {
+            execute: function(cb) {
+              if(!conn.object) {
+                cb('DOESNT_EXIST');
               }
+              cb(null, conn.object);
             }
           }
-        };
-      },
+        }
+      };
     }
   };
   return conn;
