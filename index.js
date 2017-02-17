@@ -72,13 +72,10 @@ SfDeploy.prototype.build = function() {
     }
 
     function deployResource() {
-      return deploy[options.type](conn, {
+      return deploy[options.type](conn, Object.assign({
         filePath: filePath, 
-        cacheControl: options.cacheControl,
-        contentType: options.contentType,
-        name: options.name,
         id: cache.data.id
-      });
+      }, options));
     }
 
     function loginAndDeploy() {

@@ -1,6 +1,6 @@
 {
   "name": "broccoli-salesforce-deploy",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A broccoli plugin to deploy files to a salesforce org using the tooling ap",
   "main": "index.js",
   "scripts": {
