@@ -21,7 +21,6 @@ function SfDeploy(inputNode, options) {
     return new SfDeploy(inputNode, options);
   }
 
-
   Plugin.call(this, [inputNode], {
     annotation: options.annotation,
     persistentOutput: true
@@ -52,6 +51,7 @@ SfDeploy.prototype.build = function() {
     this.cache = newCache(cacheFilePath);
   }
   var cache = this.cache;
+  var userCache;
 
   connectionCache.init()
   .then(connectionData => {
@@ -59,15 +59,18 @@ SfDeploy.prototype.build = function() {
   })
   .then(data => {
     var conn = null;
-    if(!connectionCache.data.accessToken) {
+    if(connectionCache.data[options.username])
+      connectionCache.data[options.username] = {};
+    userCache = connectionCache.data[options.username];
+    if(!userCache.accessToken) {
       conn = new jsforce.Connection({
         loginUrl : options.loginUrl || 'https://login.salesforce.com',
       });
     }
     else {
       conn = new jsforce.Connection({
-        accessToken: connectionCache.data.accessToken,
-        instanceUrl: connectionCache.data.instanceUrl
+        accessToken: userCache.accessToken,
+        instanceUrl: userCache.instanceUrl
       });
     }
 
@@ -83,9 +86,9 @@ SfDeploy.prototype.build = function() {
         conn.login(options.username, options.password + options.securityToken, (err, userInfo) => {
           if(err) throw err;
 
-          connectionCache.data.accessToken = conn.accessToken;
-          connectionCache.data.instanceUrl = conn.instanceUrl;
-          connectionCache.data.userInfo = userInfo;
+          userCache.accessToken = conn.accessToken;
+          userCache.instanceUrl = conn.instanceUrl;
+          userCache.userInfo = userInfo;
           connectionCache.write();
 
           deployResource()
@@ -103,7 +106,7 @@ SfDeploy.prototype.build = function() {
       });
     }
 
-    if(!connectionCache.data.accessToken) {
+    if(!userCache.accessToken) {
       return loginAndDeploy();
     }
     else {
