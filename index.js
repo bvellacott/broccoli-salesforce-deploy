@@ -59,7 +59,7 @@ SfDeploy.prototype.build = function() {
   })
   .then(data => {
     var conn = null;
-    if(connectionCache.data[options.username])
+    if(!connectionCache.data[options.username])
       connectionCache.data[options.username] = {};
     userCache = connectionCache.data[options.username];
     if(!userCache.accessToken) {
