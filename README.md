@@ -1,5 +1,5 @@
 # broccoli-salesforce-deploy
-A broccoli plugin to deploy files to a salesforce org using the tooling api 
+A broccoli plugin to deploy files to a salesforce org using the rest api - ***MUCH FASTER BUT DOESN'T PREVENT OVERWRITES***
 
 ## an example Brocfile.js for deploying a resource dir as a salesforce staticresource
 
